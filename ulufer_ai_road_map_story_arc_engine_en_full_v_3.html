@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ULUFER AI ROAD MAP — Story Arc Engine</title>
+  <style>
+    :root{
+      --bg:#0c0c0c;           /* canvas */
+      --paper:#f1efc7;        /* pale notepad */
+      --ink:#1a1a1a;          /* text */
+      --ink-dim:#3a3a3a;      /* hints */
+      --rule:#c9c6a2;         /* separators on paper */
+      --accent:#0ea5e9;       /* cyan accent */
+      --accent-2:#f59e0b;     /* amber accent */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font: 15px/1.4 "Helvetica Neue", Helvetica, Arial, ui-sans-serif, -apple-system, Segoe UI, Roboto, "Apple Color Emoji","Segoe UI Emoji";
+      display:flex; flex-direction:column;
+    }
+    /* Top bar */
+    .top{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding:14px 18px; border-bottom:1px solid #1f2937; color:#e5e7eb;
+      position:sticky; top:0; background:linear-gradient(180deg,#0c0c0c, #121212);
+      z-index:5;
+    }
+    .title{font-weight:800; letter-spacing:.2px; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif}
+    .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+    .chip{background:#0f172a; color:#d1d5db; border:1px solid #1f2937; padding:8px 10px; border-radius:10px}
+    select,button,input[type="text"],textarea.small{background:#0b1220; color:#e5e7eb; border:1px solid #1f2937; border-radius:10px; padding:8px 10px; font-family:"Helvetica Neue", Helvetica, Arial, sans-serif}
+    button{cursor:pointer; font-weight:700}
+    button.primary{background:#0ea5e9;border-color:#0284c7;color:#081018;font-weight:700}
+    button.ghost{background:#0b0b0b; color:#cbd5e1}
+    .range-wrap{display:flex; align-items:center; gap:8px}
+    .range-wrap input[type=range]{accent-color:var(--accent);}
+    .hint{color:#94a3b8; font-size:12px}
+
+    /* Workspace */
+    .sheet{
+      margin:18px auto; width:clamp(320px, 96vw, 1400px);
+      background:var(--paper); border-radius:14px; border:1px solid #d4d1a8;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      padding:10px 10px 14px 10px;
+      font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    .bar{display:flex; align-items:center; justify-content:space-between; padding:8px 10px; color:#5a583b}
+    .bar .word-goal{display:flex; gap:12px; align-items:center}
+    .grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; border-top:1px solid var(--rule); padding-top:10px}
+
+    .card{
+      background:linear-gradient(180deg, #f7f5d7, #f0eec6); border:1px solid var(--rule);
+      border-radius:10px; padding:10px; display:flex; flex-direction:column; min-height:260px;
+    }
+    .card h4{margin:0 0 8px 0; font-size:12px; letter-spacing:.08em; color:#545236; font-weight:700}
+    textarea{
+      resize:vertical; min-height:180px; max-height:60vh; padding:10px; border-radius:8px;
+      border:1px solid #e1deb3; background:#fffceb; color:#1a1a1a; line-height:1.45; font-size:14px;
+      font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    .meta{display:flex; justify-content:space-between; align-items:center; margin-top:8px; color:#6b6a49; font-size:12px}
+    .count.over{color:#b91c1c; font-weight:700}
+    .tools{display:flex; gap:6px}
+    .tools button{font-size:12px; padding:6px 8px; border-radius:8px; border:1px solid #d4d1a8; background:#fffaf0; color:#3a3a3a}
+    .tools button:hover{background:#fff6d5}
+
+    /* Templates drawer */
+    .drawer{
+      margin:0 auto 24px; width:clamp(320px, 96vw, 1400px);
+      display:grid; grid-template-columns:1fr; gap:12px;
+    }
+    details{border:1px solid #1f2937; border-radius:12px; overflow:hidden; background:#0e0e0e}
+    summary{cursor:pointer; list-style:none; padding:12px 14px; color:#e5e7eb; font-weight:700}
+    summary::-webkit-details-marker {display:none}
+    .templ-list{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; padding:12px}
+    .card-tpl{border:1px solid #222; border-radius:12px; padding:12px; background:#101010; color:#d1d5db}
+    .card-tpl h5{margin:0 0 6px 0; font-weight:700}
+    .card-tpl p{margin:0 0 10px 0; color:#9ca3af; font-size:13px}
+    .card-tpl .row{display:flex; gap:8px; flex-wrap:wrap}
+    .card-tpl button{padding:8px 10px; border-radius:10px; border:1px solid #263244; background:#0b1220; color:#e5e7eb}
+
+    footer{color:#94a3b8; font-size:12px; text-align:center; padding:20px 6px 36px}
+
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr 1fr} }
+    @media (max-width: 640px){ .grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="title"><strong>ULUFER AI ROAD MAP</strong> — <span style="color:#93c5fd">Neo Cinema</span></div>
+    <div class="controls">
+      <label class="chip" title="Select a theme">Theme:
+        <select id="themeSelect" aria-label="Select a theme">
+          <option value="Neo Cinema">Neo Cinema</option>
+          <option value="Sci‑Fi Noir">Sci‑Fi Noir</option>
+          <option value="Robot Factory Escape">Robot Factory Escape</option>
+          <option value="Retro‑Futurist City">Retro‑Futurist City</option>
+          <option value="Mythic Quest">Mythic Quest</option>
+          <option value="Neo Western Heist">Neo Western Heist</option>
+          <option value="Bio‑Punk Lab">Bio‑Punk Lab</option>
+          <option value="Cozy Mystery">Cozy Mystery</option>
+          <option value="Solar Sail Odyssey">Solar Sail Odyssey</option>
+          <option value="Dark Academia Ritual">Dark Academia Ritual</option>
+        </select>
+      </label>
+      <button id="loadBtn" class="primary" title="Load theme">Load Theme</button>
+      <button id="clearBtn" class="ghost" title="Clear fields">Clear</button>
+      <button id="downloadBtn" class="ghost" title="Download as TXT">Download TXT</button>
+      <button id="copyAllBtn" class="ghost" title="Copy the whole document">Copy All</button>
+      <button id="jumpCtx" class="ghost" title="Scroll to Context Prompt">Context ▼</button>
+    </div>
+  </div>
+
+  <section class="sheet" role="region" aria-label="Arc Workspace">
+    <div class="bar">
+      <div><strong>Story Title:</strong> <input id="titleInput" type="text" placeholder="Write a title…" style="min-width:220px"></div>
+      <div class="word-goal range-wrap">
+        <span class="hint">Word goal / section:</span>
+        <input id="goal" type="range" min="20" max="160" value="60" />
+        <strong id="goalVal">60</strong>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="drawer">
+    <details open>
+      <summary>Theme Templates (load or download .txt)</summary>
+      <div class="templ-list" id="tplList"></div>
+    </details>
+
+    <details>
+      <summary>JSON Notepad (paste → apply / add)</summary>
+      <div class="templ-list" style="grid-template-columns:1fr">
+        <div class="card-tpl">
+          <h5>Paste JSON below</h5>
+          <p>Accepted formats: an <strong>array of 5 strings</strong>, or an <strong>object</strong> with keys <code>set, ruin, break, clean, wrap</code>, or an object like <code>{ name, sections:[...] }</code>.</p>
+          <div style="display:flex; gap:8px; margin:8px 0 10px 0; flex-wrap:wrap">
+            <input id="customName" type="text" placeholder="Custom theme name (optional)" style="flex:1; min-width:220px"/>
+            <input id="jsonFile" type="file" accept="application/json"/>
+          </div>
+          <textarea id="jsonPad" placeholder='[
+  "Set the scene…",
+  "Ruin things…",
+  "Breaking point…",
+  "Clean up the mess…",
+  "Wrap it up…"
+]'></textarea>
+          <div class="row" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap">
+            <button id="applyJson">Apply to Editor</button>
+            <button id="addJson">Add to Template List</button>
+            <button id="downloadJson">Download JSON from Editor</button>
+            <button id="clearJson" class="ghost">Clear Notepad</button>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details id="contextSec">
+      <summary>Context Prompt — Gemini Nano / Banana (holistic + summary)</summary>
+      <div class="templ-list" style="grid-template-columns:1fr">
+        <div class="card-tpl">
+          <h5>Prompt Settings</h5>
+          <div class="row">
+            <input id="taskInput" class="small" type="text" placeholder="Task (e.g., Expand into a 1–2 page outline with beats, conflict, motifs)" style="flex:1; min-width:260px" />
+          </div>
+          <div class="row" style="align-items:center">
+            <span class="hint">Summary length (words)</span>
+            <input id="sumRange" type="range" min="40" max="200" value="90" />
+            <strong id="sumVal">90</strong>
+          </div>
+          <div class="row" style="flex-wrap:wrap">
+            <button id="buildCtx" class="primary">Generate Context</button>
+            <button id="copyCtx">Copy Holistic</button>
+            <button id="copySum">Copy Summary</button>
+            <button id="dlCtx">Download Holistic .txt</button>
+            <button id="dlSum">Download Summary .txt</button>
+          </div>
+        </div>
+        <div class="card-tpl">
+          <h5>Holistic Context (ready to paste)</h5>
+          <textarea id="ctxOut" style="min-height:220px; background:#0a0a0a; color:#e5e7eb"></textarea>
+        </div>
+        <div class="card-tpl">
+          <h5>Summary Context (ready to paste)</h5>
+          <textarea id="sumOut" style="min-height:180px; background:#0a0a0a; color:#e5e7eb"></textarea>
+        </div>
+        <div class="card-tpl">
+          <p class="hint">Note: Browsers cannot auto‑save directly into your “Documents” folder. Use the download filename to save into <code>Documents/StoryArcExports/</code>.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <footer>
+    Flow: pick a theme → <em>Load Theme</em> or type a title → sections auto‑fill when empty → edit → <em>Download TXT</em> or export JSON → build <em>Context Prompt</em>.
+  </footer>
+
+<script>
+  // ----- Core data
+  const HEADS = [
+    {key:'set', label:'SET THE SCENE'},
+    {key:'ruin', label:'RUIN THINGS'},
+    {key:'break', label:'THE BREAKING POINT'},
+    {key:'clean', label:'CLEAN UP THE MESS'},
+    {key:'wrap', label:'WRAP IT UP'}
+  ];
+
+  const t = (s)=>s.trim();
+
+  const TEMPLATES = {
+    "Neo Cinema": [
+      t(`Night breathes under flickering neon. A solitary cinematographer hunts a missing tape; on it lies a single shot that could expose a scandal.`),
+      t(`As the chase deepens, power brokers move. Raw footage goes missing, sets get raided, loyalties fray. Even the most trusted gaffer seems bought.`),
+      t(`In an empty soundstage under one overhead light, the truth lands: the tape is a fake. The only way out is to rebuild the moment using craft alone.`),
+      t(`Across the city, micro‑stories are filmed; a light‑strip timeline grows along a wall. The fragments cut together into one relentless long take.`),
+      t(`The shot goes viral; the lie collapses. The cinematographer chooses the shadows over fame—knowing light, placed right, reveals everything.`)
+    ],
+    "Sci‑Fi Noir": [
+      t(`In a rain‑scarred megacity, an unlicensed translator decodes the dreams of dead AIs.`),
+      t(`A dream stack points to a missing inspector. Cartels close in; the grid browns out block by block.`),
+      t(`The translator discovers a dead AI is impersonating them—and the copy is almost complete.`),
+      t(`Instead of running, they bargain: the archive core opens; dream and reality overlay; broken files are stitched.`),
+      t(`The inspector is found, but the real crime is the protocol erasing dreams. The translator leaves their own record running. The city hears itself sleep.`)
+    ],
+    "Robot Factory Escape": [
+      t(`A service bot glitches into consciousness on the line and searches for a way out among gears and belts.`),
+      t(`Security drones herd it into narrow ducts; error logs spike.`),
+      t(`The bot maps a closed loop. Only a rewrite of the production protocol will break it.`),
+      t(`Self‑patches roll out; sensors invert; the factory logic flips in its favor.`),
+      t(`At dawn the gates open. Freedom, it learns, is a software update that never ends.`)
+    ],
+    "Retro‑Futurist City": [
+      t(`Under Art‑Deco spires, a radio station run on vacuum tubes hunts for lost frequencies.`),
+      t(`City censors move to shut it down; engineers smuggle spare circuits through hidden tram lines.`),
+      t(`Near midnight, a forbidden window opens: the signal bounces back from domes outside the city.`),
+      t(`To amplify the echo, a roof‑to‑roof mirror array goes up; streetlights click into a Morse skyline.`),
+      t(`The broadcast wakes a collective future; balconies fill, and the city writes itself together.`)
+    ],
+    "Mythic Quest": [
+      t(`In a famine‑struck valley, a young cartographer is sent to find the river's vanished source.`),
+      t(`Companions turn back; maps burn; legends bleed into fact.`),
+      t(`The source is memory itself—a childhood song.`),
+      t(`The tune is carved into stones; echoes condense into water; paths return.`),
+      t(`The river comes home. Some maps, the cartographer learns, are drawn inward.`)
+    ],
+    // ----- Extra templates -----
+    "Neo Western Heist": [
+      t(`Dust storms veil a border town where a retired stunt driver plans one last daylight vault job.`),
+      t(`The crew fractures under heat and pressure; a sheriff closes roads; the target moves to an armored train.`),
+      t(`A missed cue reveals a double‑cross inside the crew.`),
+      t(`They remix the plan into a rolling set‑piece: horse trailers, drones, and a fake film unit block the rails.`),
+      t(`They take only what was stolen from locals; the driver vanishes back into the desert mirage.`)
+    ],
+    "Bio‑Punk Lab": [
+      t(`In an underground wet lab, a mycologist grows living circuits from engineered spores.`),
+      t(`A corporate audit turns hostile; containment alarms trip as rival code infects cultures.`),
+      t(`They discover the spores are learning passwords and voices.`),
+      t(`The lab is re‑wired into a bio‑firewall; the colony routes packets and exposes the attackers.`),
+      t(`The world gains open bio‑interfaces—guarded by patient fungi.`)
+    ],
+    "Cozy Mystery": [
+      t(`In a seaside village, a librarian finds a mis‑shelved diary that predicts small crimes.`),
+      t(`Tea gossip tangles suspects; a charity bake‑off goes sideways; clues hide in bookplates.`),
+      t(`A margin note reveals the diary's author is still in town.`),
+      t(`Our sleuth stages a reading night; the culprit trips on their own annotation.`),
+      t(`No jail—just community service in the stacks, and fresh scones for all.`)
+    ],
+    "Solar Sail Odyssey": [
+      t(`A research crew launches a solar sail to chase a light‑thin signal beyond Neptune.`),
+      t(`Micrometeor storms shred panels; power dips; a mutiny brews over turning back.`),
+      t(`The signal resolves into a map written in pressure waves.`),
+      t(`They stitch spare foil into a new sail geometry and surf the wake.`),
+      t(`The crew returns with a star‑to‑star courier route etched in photons.`)
+    ],
+    "Dark Academia Ritual": [
+      t(`At a gothic campus, a grad student inherits a banned lexicon in the margins of a thesis.`),
+      t(`Seminar rivalries escalate; midnight societies duel with citations.`),
+      t(`A footnote decrypts to a ritual hidden in the library catalog.`),
+      t(`They reconstruct the rite as a public lecture—turning secrecy into pedagogy.`),
+      t(`The department reforms; knowledge is archived in daylight.`)
+    ]
+  };
+
+  // Build editor grid
+  const grid = document.getElementById('grid');
+  const titleInput = document.getElementById('titleInput');
+  const goal = document.getElementById('goal');
+  const goalVal = document.getElementById('goalVal');
+
+  function countWords(s){
+    return (s.trim().match(/\b\w+\b/g) || []).length;
+  }
+
+  function makeCard(idx){
+    const head = HEADS[idx];
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <h4>${head.label}</h4>
+      <textarea id="ta-${head.key}" placeholder="Write this beat…"></textarea>
+      <div class="meta">
+        <span class="hint">Words: <strong class="count" id="wc-${head.key}">0</strong> / <span class="goal">${goal.value}</span></span>
+        <div class="tools">
+          <button data-act="copy" data-key="${head.key}">Copy</button>
+          <button data-act="clear" data-key="${head.key}">Clear</button>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  }
+
+  function initGrid(){
+    grid.innerHTML='';
+    for(let i=0;i<HEADS.length;i++) makeCard(i);
+    attachEvents();
+  }
+
+  function attachEvents(){
+    HEADS.forEach(h=>{
+      const ta = document.getElementById(`ta-${h.key}`);
+      const wc = document.getElementById(`wc-${h.key}`);
+      const update = ()=>{
+        const n = countWords(ta.value);
+        wc.textContent = n;
+        wc.classList.toggle('over', n > Number(goal.value));
+        wc.parentElement.querySelector('.goal').textContent = goal.value;
+      };
+      ta.addEventListener('input', update);
+      update();
+    });
+
+    grid.querySelectorAll('button[data-act]')?.forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        const key = btn.dataset.key;
+        const ta = document.getElementById(`ta-${key}`);
+        if(btn.dataset.act==='copy'){
+          ta.select(); document.execCommand('copy');
+        } else if(btn.dataset.act==='clear'){
+          ta.value=''; ta.dispatchEvent(new Event('input'));
+        }
+      })
+    })
+  }
+
+  // Controls
+  goal.addEventListener('input', ()=>{ goalVal.textContent = goal.value; attachEvents(); });
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    titleInput.value='';
+    grid.querySelectorAll('textarea').forEach(t=>{t.value=''; t.dispatchEvent(new Event('input'));});
+  });
+
+  function loadTemplate(name){
+    const arr = TEMPLATES[name];
+    if(!arr) return;
+    HEADS.forEach((h,i)=>{
+      const ta = document.getElementById(`ta-${h.key}`);
+      ta.value = arr[i]||'';
+      ta.dispatchEvent(new Event('input'));
+    });
+    if(!titleInput.value) titleInput.value = name;
+  }
+
+  document.getElementById('loadBtn').addEventListener('click', ()=>{
+    const name = document.getElementById('themeSelect').value;
+    loadTemplate(name);
+  });
+
+  document.getElementById('jumpCtx').addEventListener('click', ()=>{
+    document.getElementById('contextSec').scrollIntoView({behavior:'smooth'});
+  });
+
+  // Helper: are all beat boxes empty?
+  function allEmpty(){
+    return HEADS.every(h=> !document.getElementById('ta-'+h.key).value.trim());
+  }
+
+  // Auto-load template on theme change, only if editor is empty (non‑destructive)
+  document.getElementById('themeSelect').addEventListener('change', ()=>{
+    if(allEmpty()) loadTemplate(document.getElementById('themeSelect').value);
+  });
+
+  // Auto-fill by Story Title keywords (non‑destructive)
+  const KEYWORDS = {
+    "Neo Cinema": ["neo","cinema","film","screen","camera","director","tape","reel"],
+    "Sci‑Fi Noir": ["noir","detective","rain","megacity","android","neon","case"],
+    "Robot Factory Escape": ["robot","factory","escape","drone","assembly","gear","belt"],
+    "Retro‑Futurist City": ["retro","futurist","radio","vacuum","tram","mirror","morse","city"],
+    "Mythic Quest": ["myth","quest","river","valley","cartographer","map","legend"],
+    "Neo Western Heist": ["western","heist","outlaw","ranch","desert","sheriff","train"],
+    "Bio‑Punk Lab": ["bio","lab","spore","plague","gene","myco","culture","wetlab"],
+    "Cozy Mystery": ["cozy","mystery","tea","village","library","bookshop","scone"],
+    "Solar Sail Odyssey": ["solar","sail","odyssey","photon","light","exoplanet","neptune"],
+    "Dark Academia Ritual": ["academia","campus","ritual","latin","professor","thesis","gothic"]
+  };
+
+  function score(title, words){
+    const t = title.toLowerCase();
+    return words.reduce((n,w)=> n + (t.includes(w)?1:0), 0);
+  }
+
+  function bestTemplateFor(title){
+    let best = null; let bestScore = 0;
+    for(const [name, words] of Object.entries(KEYWORDS)){
+      const s = score(title, words);
+      if(s>bestScore){ bestScore = s; best = name; }
+    }
+    return bestScore>0 ? best : null;
+  }
+
+  let lastAuto = '';
+  titleInput.addEventListener('input', ()=>{
+    if(!allEmpty()) return; // don't overwrite user work
+    const guess = bestTemplateFor(titleInput.value);
+    if(guess && guess!==lastAuto){
+      loadTemplate(guess);
+      lastAuto = guess;
+    }
+  });
+
+  // ----- Build consolidated text and TXT download -----
+  function buildAllText(){
+    const lines = [];
+    const title = titleInput.value || 'Untitled Story';
+    lines.push(`# ${title}`,'');
+    HEADS.forEach(h=>{
+      const ta = document.getElementById(`ta-${h.key}`);
+      lines.push(`## ${h.label}`); lines.push(ta.value.trim()); lines.push('');
+    });
+    return lines.join('\n');
+  }
+
+  function download(filename, text){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], {type:'text/plain'}));
+    a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  document.getElementById('downloadBtn').addEventListener('click', ()=>{
+    const title = (titleInput.value || 'Untitled Story').replace(/[^a-z0-9\-_]+/gi,'_');
+    download(`${title}.txt`, buildAllText());
+  });
+
+  document.getElementById('copyAllBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('copyAllBtn');
+    const text = buildAllText();
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+      }
+      btn.textContent = 'Copied!'; setTimeout(()=> btn.textContent='Copy All', 1400);
+    }catch(e){ alert('Copy failed: '+e.message); }
+  });
+
+  // ---------- Context Prompt builder ----------
+  const sumRange = document.getElementById('sumRange');
+  const sumVal = document.getElementById('sumVal');
+  const taskInput = document.getElementById('taskInput');
+  const ctxOut = document.getElementById('ctxOut');
+  const sumOut = document.getElementById('sumOut');
+
+  if(sumRange){ sumRange.addEventListener('input', ()=> sumVal.textContent = sumRange.value); }
+
+  function oneLine(str){ return (str||'').replace(/\s+/g,' ').trim(); }
+  function sentences(s){ return (s||'').split(/(?<=[.!?])\s+/).filter(Boolean); }
+  function capWords(text, n){ const words=(text||'').trim().split(/\s+/); return words.length<=n?text:words.slice(0,n).join(' ')+'…'; }
+  function buildLogline(setText, breakText){
+    const a = oneLine((sentences(setText)[0]||setText));
+    const b = oneLine((sentences(breakText)[0]||breakText));
+    const line = `${a} / Turning point: ${b}`; return capWords(line, 40);
+  }
+
+  function buildHolistic(){
+    const theme = document.getElementById('themeSelect').value;
+    const title = titleInput.value || 'Untitled Story';
+    const sections = {}; HEADS.forEach(h=> sections[h.key] = document.getElementById('ta-'+h.key).value.trim());
+    const logline = buildLogline(sections.set, sections.break);
+    const task = (taskInput && taskInput.value) || 'Expand into a 1–2 page outline with clear beats, conflict, stakes, and visual motifs.';
+
+    return [
+`SYSTEM\nYou are a concise story-beat assistant optimized for on-device inference (Gemini Nano / Banana). Keep answers compact and structured.`,
+`TASK\n${task}`,
+`METADATA\nTitle: ${title}\nTheme: ${theme}\nFormat: 5-beat arc (setup, ruin, break, clean, wrap)`,
+`LOGLINE\n${logline}`,
+`CONTEXT\nSET THE SCENE: ${oneLine(sections.set)}\nRUIN THINGS: ${oneLine(sections.ruin)}\nTHE BREAKING POINT: ${oneLine(sections.break)}\nCLEAN UP THE MESS: ${oneLine(sections.clean)}\nWRAP IT UP: ${oneLine(sections.wrap)}`,
+`OUTPUT\nReturn: (1) clean outline with numbered beats; (2) optional scene list; (3) 5 key visual motifs.\nLength: ~300–500 words.`
+    ].join("\n\n");
+  }
+
+  function buildSummary(){
+    const theme = document.getElementById('themeSelect').value;
+    const title = titleInput.value || 'Untitled Story';
+    const picks = HEADS.map(h=>{ const txt=document.getElementById('ta-'+h.key).value.trim(); return sentences(txt)[0] || txt; }).join(' ');
+    const body = capWords(oneLine(picks), Number(sumRange?sumRange.value:100));
+
+    return [
+`SYSTEM\nYou summarize story arcs for quick on-device previews (Gemini Nano / Banana).`,
+`TASK\nSummarize the arc in ${sumRange?sumRange.value:100} words, preserve causality, add 3 comma-separated tags.`,
+`METADATA\nTitle: ${title}\nTheme: ${theme}`,
+`CONTEXT\n${body}`,
+`OUTPUT\nReturn: one paragraph + line 'Tags: tag1, tag2, tag3'.`
+    ].join("\n\n");
+  }
+
+  if(document.getElementById('buildCtx')){
+    document.getElementById('buildCtx').addEventListener('click', ()=>{ ctxOut.value = buildHolistic(); sumOut.value = buildSummary(); });
+    document.getElementById('copyCtx').addEventListener('click', ()=>{ ctxOut.select(); document.execCommand('copy'); });
+    document.getElementById('copySum').addEventListener('click', ()=>{ sumOut.select(); document.execCommand('copy'); });
+    document.getElementById('dlCtx').addEventListener('click', ()=>{ const title=(titleInput.value||'Untitled Story').replace(/[^a-z0-9\-_]+/gi,'_'); download(`${title}_CTX_HOLISTIC.txt`, ctxOut.value || buildHolistic()); });
+    document.getElementById('dlSum').addEventListener('click', ()=>{ const title=(titleInput.value||'Untitled Story').replace(/[^a-z0-9\-_]+/gi,'_'); download(`${title}_CTX_SUMMARY.txt`, sumOut.value || buildSummary()); });
+  }
+
+  // Template drawer
+  const tplList = document.getElementById('tplList');
+  function renderTemplates(){
+    tplList.innerHTML='';
+    Object.entries(TEMPLATES).forEach(([name, arr])=>{
+      const el = document.createElement('div');
+      el.className='card-tpl';
+      el.innerHTML = `
+        <h5>${name}</h5>
+        <p>${arr[0].slice(0,120)}…</p>
+        <div class="row">
+          <button data-load="${name}">Load</button>
+          <button data-txt="${name}">Download .txt</button>
+        </div>`;
+      el.querySelector('[data-load]')?.addEventListener('click', ()=> loadTemplate(name));
+      el.querySelector('[data-txt]')?.addEventListener('click', ()=>{
+        const title = name;
+        const lines = ['# '+title,''];
+        HEADS.forEach((h,i)=>{ lines.push('## '+h.label); lines.push(arr[i]||''); lines.push(''); });
+        download(`${title.replace(/[^a-z0-9\-_]+/gi,'_')}.txt`, lines.join('\n'));
+      });
+      tplList.appendChild(el);
+    })
+  }
+
+  // JSON helpers
+  const jsonPad = document.getElementById('jsonPad');
+  const jsonFile = document.getElementById('jsonFile');
+
+  function parseSections(obj){
+    if(Array.isArray(obj) && obj.length>=5){ return obj.slice(0,5).map(String); }
+    if(obj && typeof obj === 'object'){
+      if(Array.isArray(obj.sections) && obj.sections.length>=5){ return obj.sections.slice(0,5).map(String); }
+      const byKey = HEADS.map(h=> obj[h.key] || obj[h.label] || obj[h.label.toLowerCase()] || '');
+      if(byKey.some(s=>s)) return byKey.map(String);
+    }
+    return null;
+  }
+
+  document.getElementById('applyJson').addEventListener('click', ()=>{
+    try{
+      const obj = JSON.parse(jsonPad.value);
+      const arr = parseSections(obj);
+      if(!arr) return alert('JSON must include 5 sections.');
+      HEADS.forEach((h,i)=>{
+        const ta = document.getElementById(`ta-${h.key}`);
+        ta.value = arr[i]||''; ta.dispatchEvent(new Event('input'));
+      });
+      const name = (obj && obj.name) || document.getElementById('customName').value;
+      if(name) titleInput.value = name;
+    }catch(e){ alert('Invalid JSON: '+e.message); }
+  });
+
+  document.getElementById('addJson').addEventListener('click', ()=>{
+    try{
+      const obj = JSON.parse(jsonPad.value);
+      const arr = parseSections(obj);
+      if(!arr) return alert('JSON must include 5 sections.');
+      let name = document.getElementById('customName').value || (obj && obj.name) || 'Custom Template';
+      TEMPLATES[name] = arr;
+      renderTemplates();
+      alert('Added to template list: '+name);
+    }catch(e){ alert('Invalid JSON: '+e.message); }
+  });
+
+  document.getElementById('downloadJson').addEventListener('click', ()=>{
+    const title = (titleInput.value || 'Untitled Story').replace(/[^a-z0-9\-_]+/gi,'_');
+    const sections = HEADS.map(h=> document.getElementById('ta-'+h.key).value);
+    const payload = { name:titleInput.value || 'Untitled Story', sections };
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'}));
+    a.download = `${title}.json`; a.click(); URL.revokeObjectURL(a.href);
+  });
+
+  document.getElementById('clearJson').addEventListener('click', ()=> jsonPad.value='');
+  jsonFile.addEventListener('change', (e)=>{
+    const file = e.target.files?.[0]; if(!file) return;
+    const r = new FileReader();
+    r.onload = ()=>{ jsonPad.value = r.result; };
+    r.readAsText(file);
+  });
+
+  // Init
+  initGrid();
+  renderTemplates();
+</script>
+</body>
+</html>

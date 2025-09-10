@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FMV Atlas — Unity & AI Selection</title>
+<style>
+:root{
+  --bg:#0b0b0b; --fg:#e5e7eb; --muted:#9ca3af; --red:#ef4444;
+  --card:#111111; --line:#27272a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial}
+.container{max-width:980px;margin:0 auto;padding:24px}
+.header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin-bottom:16px}
+h1{font-size:28px;margin:0;font-weight:800;letter-spacing:.2px}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+input[type=search]{background:#0f0f10;border:1px solid var(--line);color:var(--fg);padding:10px 12px;border-radius:10px;min-width:240px;outline:none}
+button{background:var(--red);border:none;color:#fff;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+button:hover{opacity:.95}
+.section{margin:26px 0}
+.section h2{font-size:18px;margin:0 0 10px;color:#fff}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);padding:12px;border-radius:12px}
+.card a{color:#fff;text-decoration:none}
+.card a:hover{text-decoration:underline}
+.card small{display:block;color:var(--muted);margin-top:6px}
+.badge{background:#1f2937;color:#e5e7eb;border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:12px;margin-left:8px}
+.footer{margin-top:26px;color:var(--muted);font-size:12px}
+.hidden{display:none}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>FMV Atlas <span class="badge">Flat UI</span></h1>
+    <div class="controls">
+      <input id="q" type="search" placeholder="Search: game, year, genre…" oninput="filterCards()">
+      <button onclick="downloadTXT()">Download links as .txt</button>
+    </div>
+  </div>
+
+  <!-- FMVs made with Unity -->
+  <section class="section">
+    <h2>FMVs made with Unity</h2>
+    <div class="list" id="unity-list">
+
+      <div class="card"><a data-title="Her Story (2015)" data-link="https://www.youtube.com/watch?v=wz7BuQ31cPc" href="https://www.youtube.com/watch?v=wz7BuQ31cPc" target="_blank" rel="noopener">Her Story (2015)</a><small>Trailer · Unity</small></div>
+
+      <div class="card"><a data-title="The Bunker (2016)" data-link="https://www.youtube.com/watch?v=YdzOs2vIO8Y" href="https://www.youtube.com/watch?v=YdzOs2vIO8Y" target="_blank" rel="noopener">The Bunker (2016)</a><small>Official Trailer · Wales Interactive</small></div>
+
+      <div class="card"><a data-title="Late Shift (2017)" data-link="https://www.youtube.com/watch?v=XlfCRV1j_v4" href="https://www.youtube.com/watch?v=XlfCRV1j_v4" target="_blank" rel="noopener">Late Shift (2017)</a><small>Official Trailer</small></div>
+
+      <div class="card"><a data-title="The Infectious Madness of Doctor Dekker (2017)" data-link="https://www.youtube.com/watch?v=q-31s3nJUAg" href="https://www.youtube.com/watch?v=q-31s3nJUAg" target="_blank" rel="noopener">The Infectious Madness of Doctor Dekker (2017)</a><small>Launch Trailer</small></div>
+
+      <div class="card"><a data-title="The Shapeshifting Detective (2018)" data-link="https://www.youtube.com/watch?v=5vTIe8Mxw5g" href="https://www.youtube.com/watch?v=5vTIe8Mxw5g" target="_blank" rel="noopener">The Shapeshifting Detective (2018)</a><small>Official Launch Trailer</small></div>
+
+      <div class="card"><a data-title="Telling Lies (2019)" data-link="https://www.youtube.com/watch?v=YhLpQaAplMQ" href="https://www.youtube.com/watch?v=YhLpQaAplMQ" target="_blank" rel="noopener">Telling Lies (2019)</a><small>Launch Trailer · Annapurna</small></div>
+
+      <div class="card"><a data-title="The Complex (2020)" data-link="https://www.youtube.com/watch?v=1flPHceAsXY" href="https://www.youtube.com/watch?v=1flPHceAsXY" target="_blank" rel="noopener">The Complex (2020)</a><small>Official Trailer</small></div>
+
+      <div class="card"><a data-title="Not For Broadcast (1.0: 2022)" data-link="https://www.youtube.com/watch?v=j9yrE6ymHwQ" href="https://www.youtube.com/watch?v=j9yrE6ymHwQ" target="_blank" rel="noopener">Not For Broadcast (1.0: 2022)</a><small>Launch Trailer</small></div>
+
+      <div class="card"><a data-title="IMMORTALITY (2022)" data-link="https://www.youtube.com/watch?v=UCuSvXrEQdA" href="https://www.youtube.com/watch?v=UCuSvXrEQdA" target="_blank" rel="noopener">IMMORTALITY (2022)</a><small>Release Trailer · Half Mermaid</small></div>
+
+      <div class="card"><a data-title="Five Dates (2020)" data-link="https://www.youtube.com/watch?v=SYUs__Zan_w" href="https://www.youtube.com/watch?v=SYUs__Zan_w" target="_blank" rel="noopener">Five Dates (2020)</a><small>Official Reveal/Trailer</small></div>
+
+      <div class="card"><a data-title="Ten Dates (2023)" data-link="https://www.youtube.com/watch?v=frIlSvI00JI" href="https://www.youtube.com/watch?v=frIlSvI00JI" target="_blank" rel="noopener">Ten Dates (2023)</a><small>Official Announcement Trailer</small></div>
+
+      <div class="card"><a data-title="The Isle Tide Hotel (2023)" data-link="https://www.youtube.com/watch?v=_lSv_RQkKi8" href="https://www.youtube.com/watch?v=_lSv_RQkKi8" target="_blank" rel="noopener">The Isle Tide Hotel (2023)</a><small>Official Gameplay Trailer</small></div>
+
+      <div class="card"><a data-title="Bloodshore (2021)" data-link="https://www.youtube.com/watch?v=iZykaKIs7-8" href="https://www.youtube.com/watch?v=iZykaKIs7-8" target="_blank" rel="noopener">Bloodshore (2021)</a><small>Announcement Trailer</small></div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- CHRONOLOGY -->
+  <section class="section">
+    <h2>Chronology · Past → Present</h2>
+    <div class="list" id="chron-list">
+
+      <div class="card"><a data-title="Dragon’s Lair (1983, Arcade/LaserDisc)" data-link="https://www.youtube.com/watch?v=gE0BXOJ5pbE" href="https://www.youtube.com/watch?v=gE0BXOJ5pbE" target="_blank" rel="noopener">Dragon’s Lair (1983)</a><small>Original Trailer (Upscaled)</small></div>
+
+      <div class="card"><a data-title="Night Trap (1992, Sega CD)" data-link="https://www.youtube.com/watch?v=KsRTQUjYfXI" href="https://www.youtube.com/watch?v=KsRTQUjYfXI" target="_blank" rel="noopener">Night Trap (1992)</a><small>25th Anniversary Announcement Trailer</small></div>
+
+      <div class="card"><a data-title="Wing Commander III (1994)" data-link="https://www.youtube.com/watch?v=kBZfVm6aCLo" href="https://www.youtube.com/watch?v=kBZfVm6aCLo" target="_blank" rel="noopener">Wing Commander III (1994)</a><small>Trailer (HD)</small></div>
+
+      <div class="card"><a data-title="Gabriel Knight 2: The Beast Within (1995)" data-link="https://www.youtube.com/watch?v=O8SHZbldx-0" href="https://www.youtube.com/watch?v=O8SHZbldx-0" target="_blank" rel="noopener">Gabriel Knight 2: The Beast Within (1995)</a><small>GOG Trailer</small></div>
+
+      <div class="card"><a data-title="Her Story (2015)" data-link="https://www.youtube.com/watch?v=wz7BuQ31cPc" href="https://www.youtube.com/watch?v=wz7BuQ31cPc" target="_blank" rel="noopener">Her Story (2015)</a><small>Modern FMV Renaissance</small></div>
+
+      <div class="card"><a data-title="Telling Lies (2019)" data-link="https://www.youtube.com/watch?v=YhLpQaAplMQ" href="https://www.youtube.com/watch?v=YhLpQaAplMQ" target="_blank" rel="noopener">Telling Lies (2019)</a><small>Launch Trailer</small></div>
+
+      <div class="card"><a data-title="Not For Broadcast (2022)" data-link="https://www.youtube.com/watch?v=j9yrE6ymHwQ" href="https://www.youtube.com/watch?v=j9yrE6ymHwQ" target="_blank" rel="noopener">Not For Broadcast (2022)</a><small>Launch Trailer</small></div>
+
+      <div class="card"><a data-title="IMMORTALITY (2022)" data-link="https://www.youtube.com/watch?v=UCuSvXrEQdA" href="https://www.youtube.com/watch?v=UCuSvXrEQdA" target="_blank" rel="noopener">IMMORTALITY (2022)</a><small>Release Trailer</small></div>
+
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- AI-made / AI-assisted FMV & interactive film -->
+  <section class="section">
+    <h2>AI-made / AI-assisted FMV & interactive film</h2>
+    <div class="list" id="ai-list">
+
+      <div class="card"><a data-title="IMMORTALITY — Match-Cut mechanic (Unity)" data-link="https://www.youtube.com/watch?v=UCuSvXrEQdA" href="https://www.youtube.com/watch?v=UCuSvXrEQdA" target="_blank" rel="noopener">IMMORTALITY — Match-Cut mechanic</a><small>Release Trailer · Notes on computer vision-assisted matching</small></div>
+
+      <div class="card"><a data-title="Runway — Game Worlds (AI-based interactive narrative)" data-link="https://runwayml.com/research/runway-game-worlds" href="https://runwayml.com/research/runway-game-worlds" target="_blank" rel="noopener">Runway — Game Worlds (2025)</a><small>Official research page · AI-driven real-time branching narratives</small></div>
+
+      <div class="card"><a data-title="Runway Game Worlds — video explainer" data-link="https://www.youtube.com/watch?v=Q53iqEq78Ac" href="https://www.youtube.com/watch?v=Q53iqEq78Ac" target="_blank" rel="noopener">“Game Worlds” video review</a><small>YouTube commentary preview</small></div>
+
+      <div class="card"><a data-title="IMMORTALITY — Design analysis" data-link="https://www.vice.com/en/article/immortality-is-a-masterpiece/" href="https://www.vice.com/en/article/immortality-is-a-masterpiece/" target="_blank" rel="noopener">IMMORTALITY — design analysis</a><small>Explanation of the match-cut idea (article)</small></div>
+
+    </div>
+  </section>
+
+  <div class="footer">Note: This page only lists links; videos are subject to the copyright policies of their respective platforms.</div>
+</div>
+
+<script>
+function filterCards(){
+  const q = document.getElementById('q').value.toLowerCase().trim();
+  document.querySelectorAll('.card').forEach(c=>{
+    const a = c.querySelector('a');
+    const hay = (a.getAttribute('data-title')||'').toLowerCase();
+    c.classList.toggle('hidden', q && !hay.includes(q));
+  });
+}
+function downloadTXT(){
+  const rows = [...document.querySelectorAll('a[data-link]')]
+    .map(a=>`${a.getAttribute('data-title')} — ${a.getAttribute('data-link')}`);
+  const blob = new Blob([rows.join('\n')],{type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'fmv_links.txt';
+  document.body.appendChild(a); a.click();
+  URL.revokeObjectURL(url); a.remove();
+}
+</script>
+</body>
+</html>

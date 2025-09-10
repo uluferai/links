@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ULUFER AI ROAD MAP — Story Arc Engine (EN • Bugfix)</title>
+  <style>
+    :root{
+      --bg:#0c0c0c; --paper:#f1efc7; --ink:#1a1a1a; --ink-dim:#3a3a3a; --rule:#c9c6a2;
+      --accent:#0ea5e9; --accent-2:#f59e0b;
+      --t0:#fff6e5; --t1:#eaf9f0; --t2:#eaf3ff; --t3:#f5ecff; --t4:#fff0f4;
+    }
+    .light{ --bg:#f2f2f2; --paper:#ffffff; --ink:#111213; --ink-dim:#4b5563; --rule:#e5e7eb; --accent:#3b82f6; --accent-2:#d97706;
+      --t0:#fff7ed; --t1:#ecfdf5; --t2:#eff6ff; --t3:#f5f3ff; --t4:#fff1f2;}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{ margin:0; background:var(--bg); color:var(--ink);
+      font: 15px/1.4 "Helvetica Neue", Helvetica, Arial, ui-sans-serif, -apple-system, Segoe UI, Roboto;
+      display:flex; flex-direction:column; }
+    .top{ display:flex; gap:12px; align-items:center; justify-content:space-between;
+      padding:14px 18px; border-bottom:1px solid #1f2937; color:#e5e7eb;
+      position:sticky; top:0; background:linear-gradient(180deg,#0c0c0c,#121212); z-index:5; }
+    .title{font-weight:800; letter-spacing:.2px}
+    .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+    .chip{background:#0f172a; color:#d1d5db; border:1px solid #1f2937; padding:8px 10px; border-radius:10px}
+    select,button,input[type="text"],input[type="url"],textarea{background:#0b1220; color:#e5e7eb; border:1px solid #1f2937; border-radius:10px; padding:8px 10px}
+    button{cursor:pointer; font-weight:700}
+    button.primary{background:var(--accent);border-color:#0284c7;color:#081018}
+    button.ghost{background:#0b0b0b; color:#cbd5e1}
+    .range-wrap{display:flex; align-items:center; gap:8px}
+    .range-wrap input[type=range]{accent-color:var(--accent);}
+    .hint{color:#94a3b8; font-size:12px}
+
+    .sheet{ margin:18px auto; width:clamp(320px,96vw,1400px);
+      background:var(--paper); border-radius:14px; border:1px solid var(--rule);
+      box-shadow:0 10px 30px rgba(0,0,0,.35); padding:10px 10px 14px; }
+
+    .banner-wrap{position:relative; width:100%; border:1px dashed var(--rule); border-radius:12px; overflow:hidden; background:#0b0b0b; margin:6px 0 12px 0}
+    .banner{position:relative; width:100%; aspect-ratio:21/4; min-height:160px; overflow:hidden; background:#0b0b0b}
+    .banner img{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(1); transform-origin:center; user-select:none; pointer-events:none; height:100%; max-width:none}
+    .banner img:is(:not([src]),[src=""]){display:none}
+    .banner.empty::before{content:"Header Image (21:4) — Drag & drop here or use tools below"; position:absolute; inset:0; display:grid; place-items:center; color:#9ca3af; font-weight:700; text-align:center; padding:8px}
+    .banner-wrap.drag .banner{outline:3px dashed #93c5fd; outline-offset:-6px; filter:brightness(1.03)}
+
+    .banner-tools{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:8px 0 4px}
+    .banner-tools .btn-small{padding:6px 10px; border-radius:8px; border:1px solid #d4d1a8; background:#fffaf0; color:#3a3a3a; cursor:pointer; font-weight:700}
+    .banner-tools .btn-small:hover{background:#fff4cf}
+    .banner-tools .url{min-width:240px; background:#fffceb; border:1px solid #e1deb3; color:#1a1a1a; border-radius:8px; padding:8px 10px}
+    .banner-tools label.btnlike{border:1px dashed #e1deb3; background:#fffaf0; color:#3a3a3a; padding:6px 10px; border-radius:8px; cursor:pointer}
+    .banner-tools .hint{color:#6b6a49; font-size:12px}
+
+    .bar{display:flex; align-items:center; justify-content:space-between; padding:8px 10px; color:#5a583b}
+    .grid{display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; border-top:1px solid var(--rule); padding-top:10px}
+
+    .card{ background:linear-gradient(180deg, #f7f5d7, #f0eec6); border:1px solid var(--rule); border-radius:10px; padding:10px; display:flex; flex-direction:column; min-height:260px; }
+    .card.tint0{background:linear-gradient(180deg,var(--t0),#f0eec6)}
+    .card.tint1{background:linear-gradient(180deg,var(--t1),#f0eec6)}
+    .card.tint2{background:linear-gradient(180deg,var(--t2),#f0eec6)}
+    .card.tint3{background:linear-gradient(180deg,var(--t3),#f0eec6)}
+    .card.tint4{background:linear-gradient(180deg,var(--t4),#f0eec6)}
+
+    .card h4{margin:0 0 8px 0; font-size:12px; letter-spacing:.08em; color:#545236; font-weight:700}
+    textarea{
+      resize:vertical; min-height:180px; max-height:60vh; padding:10px; border-radius:8px;
+      border:1px solid #e1deb3; background:#fffceb; color:#1a1a1a; line-height:1.45; font-size:14px;
+    }
+    .meta{display:flex; justify-content:space-between; align-items:center; margin-top:8px; color:#6b6a49; font-size:12px}
+    .count.over{color:#b91c1c; font-weight:700}
+    .tools{display:flex; gap:6px}
+    .tools button{font-size:12px; padding:6px 8px; border-radius:8px; border:1px solid #d4d1a8; background:#fffaf0; color:#3a3a3a}
+    .tools button:hover{background:#fff6d5}
+
+    .drawer{ margin:0 auto 24px; width:clamp(320px,96vw,1400px); display:grid; grid-template-columns:1fr; gap:12px; }
+    details{border:1px solid #1f2937; border-radius:12px; overflow:hidden; background:#0e0e0e}
+    summary{cursor:pointer; list-style:none; padding:12px 14px; color:#e5e7eb; font-weight:700}
+    summary::-webkit-details-marker{display:none}
+    .templ-list{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; padding:12px}
+    .card-tpl{border:1px solid #222; border-radius:12px; padding:12px; background:#101010; color:#d1d5db}
+    .card-tpl h5{margin:0 0 6px 0; font-weight:700}
+    .card-tpl p{margin:0 0 10px 0; color:#9ca3af; font-size:13px}
+    .card-tpl .row{display:flex; gap:8px; flex-wrap:wrap}
+    .card-tpl button{padding:8px 10px; border-radius:10px; border:1px solid #263244; background:#0b1220; color:#e5e7eb}
+
+    footer{color:#94a3b8; font-size:12px; text-align:center; padding:20px 6px 36px}
+
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr 1fr} }
+    @media (max-width: 640px){ .grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="title"><strong>ULUFER AI ROAD MAP</strong> — <span style="color:#93c5fd">Neo Cinema</span></div>
+    <div class="controls">
+      <label class="chip">Theme:
+        <select id="themeSelect">
+          <option value="Neo Cinema">Neo Cinema</option>
+          <option value="Sci‑Fi Noir">Sci‑Fi Noir</option>
+          <option value="Robot Factory Escape">Robot Factory Escape</option>
+          <option value="Retro‑Futurist City">Retro‑Futurist City</option>
+          <option value="Mythic Quest">Mythic Quest</option>
+          <option value="Neo Western Heist">Neo Western Heist</option>
+          <option value="Bio‑Punk Lab">Bio‑Punk Lab</option>
+          <option value="Cozy Mystery">Cozy Mystery</option>
+          <option value="Solar Sail Odyssey">Solar Sail Odyssey</option>
+          <option value="Dark Academia Ritual">Dark Academia Ritual</option>
+        </select>
+      </label>
+      <label class="chip">Scheme:
+        <select id="schemeSelect">
+          <option value="dark">Dark</option>
+          <option value="light">Light Grey</option>
+        </select>
+      </label>
+      <button id="loadBtn" class="primary">Load Theme</button>
+      <button id="clearBtn" class="ghost">Clear</button>
+      <button id="downloadBtn" class="ghost">Download TXT</button>
+      <button id="copyAllBtn" class="ghost">Copy All</button>
+      <button id="jumpCtx" class="ghost">Context ▼</button>
+    </div>
+  </div>
+
+  <section class="sheet" role="region" aria-label="Story Arc Workspace">
+    <div class="banner-wrap" id="bannerWrap">
+      <div class="banner empty" id="banner">
+        <img id="bannerImg" alt="header image" />
+      </div>
+    </div>
+    <div class="banner-tools">
+      <label class="btnlike">Choose Image
+        <input type="file" id="bannerFile" accept="image/*" hidden>
+      </label>
+      <input type="url" id="bannerUrl" class="url" placeholder="https://...">
+      <button id="bannerApply" class="btn-small">Apply</button>
+      <button id="bannerReset" class="btn-small">Reset</button>
+      <button id="bannerClear" class="btn-small">Clear</button>
+      <button id="bannerDownload" class="btn-small">Download PNG</button>
+      <span class="hint">Double‑click: reset · Arrow keys: pan · Shift: faster</span>
+    </div>
+
+    <div class="bar">
+      <div><strong>Story Title:</strong> <input id="titleInput" type="text" placeholder="Type a title…" style="min-width:220px"></div>
+      <div class="range-wrap">
+        <span class="hint">Word target / beat:</span>
+        <input id="goal" type="range" min="20" max="160" value="60" />
+        <strong id="goalVal">60</strong>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="drawer">
+    <details open>
+      <summary>Theme Templates (load or .txt)</summary>
+      <div class="templ-list" id="tplList"></div>
+    </details>
+
+    <details open>
+      <summary>Visual Theme Art (optional: hero per template)</summary>
+      <div class="templ-list" id="artList"></div>
+    </details>
+
+    <details id="contextSec">
+      <summary>Context Prompt — (holistic + summary)</summary>
+      <div class="templ-list" style="grid-template-columns:1fr">
+        <div class="card-tpl">
+          <h5>Prompt Settings</h5>
+          <div class="row">
+            <input id="taskInput" type="text" placeholder="Task (ex: 1–2 page skeleton; conflict, motifs, etc.)" style="flex:1; min-width:260px" />
+          </div>
+          <div class="row" style="align-items:center">
+            <span class="hint">Summary length (words)</span>
+            <input id="sumRange" type="range" min="40" max="200" value="90" />
+            <strong id="sumVal">90</strong>
+          </div>
+          <div class="row" style="flex-wrap:wrap">
+            <button id="buildCtx" class="primary">Build Context</button>
+            <button id="copyCtx">Copy Holistic</button>
+            <button id="copySum">Copy Summary</button>
+            <button id="dlCtx">Download Holistic .txt</button>
+            <button id="dlSum">Download Summary .txt</button>
+          </div>
+        </div>
+        <div class="card-tpl">
+          <h5>Holistic Context</h5>
+          <textarea id="ctxOut" style="min-height:220px; background:#0a0a0a; color:#e5e7eb"></textarea>
+        </div>
+        <div class="card-tpl">
+          <h5>Summary Context</h5>
+          <textarea id="sumOut" style="min-height:180px; background:#0a0a0a; color:#e5e7eb"></textarea>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <footer>Flow: pick theme → <em>Load Theme</em> → auto‑fill if empty → edit → <em>Download TXT</em> → <em>Context</em>.</footer>
+
+<script>
+  // ----- Scheme -----
+  (function(){
+    const schemeSel = document.getElementById('schemeSelect');
+    function applyScheme(v){
+      document.documentElement.classList.toggle('light', v==='light');
+      localStorage.setItem('sae_scheme', v);
+      schemeSel.value = v;
+    }
+    const saved = localStorage.getItem('sae_scheme') || 'dark';
+    applyScheme(saved);
+    schemeSel.addEventListener('change', ()=> applyScheme(schemeSel.value));
+  })();
+
+  function __downloadBlob(name, blob){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
+  }
+  function __fileToOptimizedDataURL(file, maxW=2520, quality=0.85){
+    return new Promise((resolve,reject)=>{
+      const r=new FileReader();
+      r.onload=()=>{ const im=new Image(); im.onload=()=>{
+        const ratio=im.width/im.height; const W=Math.min(maxW,im.width); const H=Math.round(W/ratio);
+        const c=document.createElement('canvas'); c.width=W; c.height=H; c.getContext('2d').drawImage(im,0,0,W,H);
+        resolve(c.toDataURL('image/jpeg', quality));
+      }; im.onerror=reject; im.src=r.result; };
+      r.onerror=reject; r.readAsDataURL(file);
+    });
+  }
+
+  // ----- 21:4 Banner -----
+  (function(){
+    const wrap = document.getElementById('bannerWrap');
+    const banner = document.getElementById('banner');
+    const img = document.getElementById('bannerImg');
+
+    let state = JSON.parse(localStorage.getItem('sae_banner_en')||'{}');
+    if(!state.src){ banner.classList.add('empty'); } else { applyState(); }
+
+    function save(){ localStorage.setItem('sae_banner_en', JSON.stringify(state)); }
+    function applyState(){
+      banner.classList.remove('empty');
+      img.src = state.src;
+      img.style.transform = `translate(calc(-50% + ${(state.x||0)}px), calc(-50% + ${(state.y||0)}px)) scale(${state.s||1})`;
+    }
+    function setSrc(src){ state.src = src; state.s=1; state.x=0; state.y=0; applyState(); save(); }
+
+    banner.addEventListener('wheel', (e)=>{
+      if(!state.src) return;
+      e.preventDefault();
+      const delta = Math.sign(e.deltaY) * -0.08;
+      const next = Math.min(4.0, Math.max(0.3, (state.s||1) + delta));
+      state.s = next; applyState(); save();
+    }, {passive:false});
+
+    let drag=false, sx=0, sy=0, ox=0, oy=0;
+    banner.addEventListener('pointerdown', (e)=>{
+      if(!state.src) return;
+      drag=true; banner.setPointerCapture(e.pointerId);
+      sx=e.clientX; sy=e.clientY; ox=state.x||0; oy=state.y||0;
+    });
+    function stop(e){ if(drag){ drag=false; try{banner.releasePointerCapture(e.pointerId)}catch{} save(); } }
+    banner.addEventListener('pointermove', (e)=>{
+      if(!drag) return;
+      state.x = ox + (e.clientX - sx);
+      state.y = oy + (e.clientY - sy);
+      applyState();
+    });
+    banner.addEventListener('pointerup', stop);
+    banner.addEventListener('pointercancel', stop);
+
+    ['dragenter','dragover'].forEach(ev=>wrap.addEventListener(ev, e=>{e.preventDefault(); wrap.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev=>wrap.addEventListener(ev, e=>{e.preventDefault(); wrap.classList.remove('drag');}));
+    wrap.addEventListener('drop', (e)=>{
+      const dt = e.dataTransfer; if(!dt) return;
+      if(dt.files && dt.files.length){
+        const f = dt.files[0];
+        __fileToOptimizedDataURL(f, 2520, 0.85).then(setSrc).catch(()=>{
+          const r=new FileReader(); r.onload=()=> setSrc(r.result); r.readAsDataURL(f);
+        });
+        return;
+      }
+      const url = dt.getData('text/uri-list') || dt.getData('text/plain'); if(url){ setSrc(url.trim()); }
+    });
+
+    const bannerFile = document.getElementById('bannerFile');
+    const bannerUrl  = document.getElementById('bannerUrl');
+    const bannerApply= document.getElementById('bannerApply');
+    const bannerReset= document.getElementById('bannerReset');
+    const bannerClear= document.getElementById('bannerClear');
+    const bannerDownload = document.getElementById('bannerDownload');
+    if(bannerFile){
+      bannerFile.addEventListener('change', (e)=>{
+        const f = e.target.files && e.target.files[0]; if(!f) return;
+        __fileToOptimizedDataURL(f, 2520, 0.85).then(setSrc).catch(()=>{
+          const r=new FileReader(); r.onload=()=> setSrc(r.result); r.readAsDataURL(f);
+        });
+        bannerFile.value='';
+      });
+    }
+    if(bannerApply){ bannerApply.addEventListener('click', ()=>{ const u=(bannerUrl.value||'').trim(); if(u) setSrc(u); }); }
+    if(bannerReset){ bannerReset.addEventListener('click', ()=>{ state.s=1; state.x=0; state.y=0; applyState(); save(); }); }
+    if(bannerClear){ bannerClear.addEventListener('click', ()=>{ state={src:null,s:1,x:0,y:0}; banner.classList.add('empty'); img.removeAttribute('src'); save(); }); }
+
+    banner.addEventListener('dblclick', ()=>{ state.s=1; state.x=0; state.y=0; applyState(); save(); });
+
+    document.addEventListener('keydown', (e)=>{
+      const tag = (e.target && (e.target.tagName||'')).toLowerCase();
+      if(tag==='input' || tag==='textarea' || e.metaKey || e.ctrlKey || e.altKey) return;
+      if(!state.src) return;
+      const step = e.shiftKey ? 30 : 8;
+      if(e.key==='ArrowLeft'){ state.x -= step; applyState(); save(); e.preventDefault(); }
+      else if(e.key==='ArrowRight'){ state.x += step; applyState(); save(); e.preventDefault(); }
+      else if(e.key==='ArrowUp'){ state.y -= step; applyState(); save(); e.preventDefault(); }
+      else if(e.key==='ArrowDown'){ state.y += step; applyState(); save(); e.preventDefault(); }
+      else if(e.key==='0'){ state.s=1; state.x=0; state.y=0; applyState(); save(); e.preventDefault(); }
+      else if((e.key==='+'||e.key==='=')){ state.s=Math.min(4.0,(state.s||1)+0.1); applyState(); save(); e.preventDefault(); }
+      else if(e.key==='-'){ state.s=Math.max(0.3,(state.s||1)-0.1); applyState(); save(); e.preventDefault(); }
+    });
+
+    function exportBannerPNG(W=2520){
+      if(!state.src){ alert('Load an image first.'); return; }
+      const H = Math.round(W*4/21);
+      const c = document.createElement('canvas'); c.width=W; c.height=H; const ctx=c.getContext('2d');
+      const im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = ()=>{
+        try{
+          const ratio = im.width/im.height;
+          const baseW = H * ratio;
+          const s = state.s||1;
+          const drawW = baseW * s;
+          const drawH = H * s;
+          const x = (W/2 + (state.x||0)) - drawW/2;
+          const y = (H/2 + (state.y||0)) - drawH/2;
+          ctx.drawImage(im, x, y, drawW, drawH);
+          c.toBlob(b=>{ if(!b){ alert('PNG failed'); return; } __downloadBlob('banner_21x4.png', b); }, 'image/png', 0.95);
+        }catch(err){
+          console.error(err); alert('PNG export blocked (CORS). Use a local file or a same-origin image.');
+        }
+      };
+      im.onerror = ()=> alert('Image failed to load.');
+      im.src = state.src;
+    }
+    if(bannerDownload){ bannerDownload.addEventListener('click', ()=> exportBannerPNG()); }
+
+    window.__setBannerSrc = setSrc;
+  })();
+
+  // ----- Heads (EN) -----
+  const HEADS = [
+    {key:'set',   label:'SET THE STAGE'},
+    {key:'ruin',  label:'COMPLICATE THINGS'},
+    {key:'break', label:'BREAKPOINT'},
+    {key:'clean', label:'CLEAN UP'},
+    {key:'wrap',  label:'CLOSING'}
+  ];
+
+  // ----- Templates (EN) -----
+  const TEMPLATES = {
+    "Neo Cinema":[
+      "Under flickering neons the night breathes. A cinematographer chasing a lost tape learns a single shot could expose a scandal.",
+      "As the chase grows, power centers stir. Rushes vanish, sets get raided, loyalties fray. Even the most trusted gaffer seems bought.",
+      "Under a single top light on an empty stage, the truth appears: the tape is fake. The exit is to rebuild the moment by craft alone.",
+      "Micro‑stories are filmed across the city; a ribbon of light on a wall becomes a timeline. The pieces lock into one relentless long take.",
+      "The take goes viral; the lie collapses. The director chooses shadows over fame—because the right light reveals everything."
+    ],
+    "Sci‑Fi Noir":[
+      "In a rain‑worn megacity an unlicensed translator deciphers the dreams of dead AIs.",
+      "A heap of dreams points to a missing inspector. Cartels close in; the grid browns out block by block.",
+      "The translator finds a dead AI is imitating them—and the copy is almost complete.",
+      "Instead of running they bargain: the archive core opens; dream and reality overlap; corrupt files are stitched.",
+      "The inspector is found; the true culprit is the protocol that erases dreams. The translator leaves their own record open. The city hears its sleep."
+    ],
+    "Robot Factory Escape":[
+      "On the assembly line a service robot jolts into awareness and seeks an exit among gears and belts.",
+      "Security drones herd it into tight ducts; error logs spike.",
+      "The robot maps a closed loop. Only a rewrite of the production protocol breaks it.",
+      "Its own patches spread; sensors invert; the factory’s logic flips in its favor.",
+      "At dawn the gates open. Freedom is an endless software update."
+    ],
+    "Retro‑Futurist City":[
+      "Beneath Art‑Deco towers a vacuum‑tube radio station hunts lost frequencies.",
+      "Censors arrive to shut it down; engineers ferry spare circuits along secret tram lines.",
+      "Near midnight a forbidden window opens: the signal echoes off domes beyond the city.",
+      "To amplify the echo, mirrors are strung rooftop to rooftop; streetlights turn into a Morse silhouette.",
+      "The broadcast wakes a collective future; balconies fill; the city writes itself together."
+    ],
+    "Mythic Quest":[
+      "In a famine‑struck valley a young cartographer is sent to find the vanished river’s source.",
+      "Companions turn back; maps burn; legends leak into fact.",
+      "The source is memory itself—a childhood song.",
+      "The melody is carved into stones; echoes condense into water; the paths return.",
+      "The river comes home. Some maps, they learn, are drawn inward."
+    ],
+    "Neo Western Heist":[
+      "In a dust‑storm border town a retired stunt driver plans one last daylight vault job.",
+      "The crew cracks in the heat; the sheriff blocks the roads; the target moves to an armored train.",
+      "A missed mark exposes a double‑cross inside.",
+      "The plan becomes a moving set piece: horse trailers, drones, and a fake film crew lock the rails.",
+      "They take back only what was taken from the town; the driver fades into the desert mirage."
+    ],
+    "Bio‑Punk Lab":[
+      "In an underground wet lab a mycologist grows living circuits with engineered spores.",
+      "Corporate oversight turns hostile; rival code cultures infect and alarms wail.",
+      "They discover the spores are learning passwords and voices.",
+      "The lab becomes a bio‑firewall; the colony routes packets and unmasks the attackers.",
+      "The world wins open bio‑interfaces guarded by patient fungi."
+    ],
+    "Cozy Mystery":[
+      "In a seaside town a librarian finds a mis‑shelved diary that predicts petty crimes.",
+      "Tea gossip shuffles suspects; the charity fair stalls; clues hide in ex‑libris marks.",
+      "A margin note shows the author is still in town.",
+      "They host a reading night; the culprit trips over their own annotation.",
+      "No jail—penance is community service at the library with warm scones."
+    ],
+    "Solar Sail Odyssey":[
+      "A research crew launches a solar sail beyond Neptune to chase a light‑thin signal.",
+      "Micrometeor storms tear the panels; power drops; the turn‑back debate ignites.",
+      "The signal resolves into a map written by pressure waves.",
+      "A new sail geometry is stitched from spare foils and the chase resumes.",
+      "They return with a star‑to‑star courier route etched in photons."
+    ],
+    "Dark Academia Ritual":[
+      "On a gothic campus a grad student inherits a banned lexicon hidden in thesis footnotes.",
+      "Seminar rivalries climb; midnight societies duel with citations.",
+      "A footnote reveals the ritual is hidden in the library catalog.",
+      "The ritual is rebuilt as a public lecture—secrecy turns pedagogical.",
+      "The department renews; knowledge is archived in daylight."
+    ]
+  };
+
+  // ----- Editor grid -----
+  const grid = document.getElementById('grid');
+  const titleInput = document.getElementById('titleInput');
+  const goal = document.getElementById('goal');
+  const goalVal = document.getElementById('goalVal');
+
+  function countWords(s){ return (s.trim().match(/\b\w+\b/g) || []).length; }
+  function makeCard(idx){
+    const head = HEADS[idx];
+    const card = document.createElement('div');
+    card.className = 'card tint'+idx;
+    card.innerHTML = `
+      <h4>${head.label}</h4>
+      <textarea id="ta-${head.key}" placeholder="Write this beat…"></textarea>
+      <div class="meta">
+        <span class="hint">Words: <strong class="count" id="wc-${head.key}">0</strong> / <span class="goal">${goal.value}</span></span>
+        <div class="tools">
+          <button data-act="copy" data-key="${head.key}">Copy</button>
+          <button data-act="clear" data-key="${head.key}">Clear</button>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  }
+  function initGrid(){ grid.innerHTML=''; for(let i=0;i<HEADS.length;i++) makeCard(i); attachEvents(); }
+
+  function attachEvents(){
+    HEADS.forEach(h=>{
+      const ta = document.getElementById(`ta-${h.key}`);
+      const wc = document.getElementById(`wc-${h.key}`);
+      const update = ()=>{
+        const n = countWords(ta.value);
+        wc.textContent = n;
+        wc.classList.toggle('over', n > Number(goal.value));
+        wc.parentElement.querySelector('.goal').textContent = goal.value;
+      };
+      ta.addEventListener('input', update); update();
+    });
+    grid.querySelectorAll('button[data-act]')?.forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        const key = btn.dataset.key;
+        const ta = document.getElementById(`ta-${key}`);
+        if(btn.dataset.act==='copy'){ ta.select(); document.execCommand('copy'); }
+        else if(btn.dataset.act==='clear'){ ta.value=''; ta.dispatchEvent(new Event('input')); }
+      });
+    });
+  }
+
+  goal.addEventListener('input', ()=>{ goalVal.textContent = goal.value; attachEvents(); });
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    titleInput.value=''; grid.querySelectorAll('textarea').forEach(t=>{t.value=''; t.dispatchEvent(new Event('input'));});
+  });
+
+  function loadTemplate(name){
+    const arr = TEMPLATES[name]; if(!arr) return;
+    HEADS.forEach((h,i)=>{
+      const ta = document.getElementById(`ta-${h.key}`);
+      ta.value = arr[i]||''; ta.dispatchEvent(new Event('input'));
+    });
+    if(!titleInput.value) titleInput.value = document.querySelector(`#themeSelect option[value="${name}"]`)?.textContent || name;
+  }
+  document.getElementById('loadBtn').addEventListener('click', ()=>{
+    const name = document.getElementById('themeSelect').value; loadTemplate(name);
+  });
+  document.getElementById('jumpCtx').addEventListener('click', ()=>{
+    document.getElementById('contextSec').scrollIntoView({behavior:'smooth'});
+  });
+  function allEmpty(){ return HEADS.every(h=> !document.getElementById('ta-'+h.key).value.trim()); }
+  document.getElementById('themeSelect').addEventListener('change', ()=>{
+    if(allEmpty()) loadTemplate(document.getElementById('themeSelect').value);
+  });
+
+  function buildAllText(){
+    const lines = []; const title = titleInput.value || 'Untitled Story';
+    lines.push(`# ${title}`,''); HEADS.forEach(h=>{ const ta=document.getElementById('ta-'+h.key); lines.push(`## ${h.label}`); lines.push(ta.value.trim()); lines.push(''); });
+    return lines.join('\n');
+  }
+  function download(filename, text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
+  document.getElementById('downloadBtn').addEventListener('click', ()=>{
+    const title=(titleInput.value||'Untitled_Story').replace(/[^a-z0-9\-_]+/gi,'_'); download(`${title}.txt`, buildAllText());
+  });
+  document.getElementById('copyAllBtn').addEventListener('click', async ()=>{
+    const btn=document.getElementById('copyAllBtn'); const text=buildAllText();
+    try{
+      if(navigator.clipboard?.writeText){ await navigator.clipboard.writeText(text); }
+      else{ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+      btn.textContent='Copied!'; setTimeout(()=> btn.textContent='Copy All', 1400);
+    }catch(e){ alert('Copy failed: '+e.message); }
+  });
+
+  // Context builder (EN)
+  const sumRange = document.getElementById('sumRange');
+  const sumVal = document.getElementById('sumVal');
+  const taskInput = document.getElementById('taskInput');
+  const ctxOut = document.getElementById('ctxOut');
+  const sumOut = document.getElementById('sumOut');
+  if(sumRange){ sumRange.addEventListener('input', ()=> sumVal.textContent = sumRange.value); }
+
+  function oneLine(s){ return (s||'').replace(/\s+/g,' ').trim(); }
+  function sentences(s){ return (s||'').split(/(?<=[.!?])\s+/).filter(Boolean); }
+  function capWords(text,n){ const w=(text||'').trim().split(/\s+/); return w.length<=n?text:w.slice(0,n).join(' ')+'…'; }
+  function buildLogline(setText, breakText){
+    const a = oneLine((sentences(setText)[0]||setText));
+    const b = oneLine((sentences(breakText)[0]||breakText));
+    return capWords(`${a} / Breakpoint: ${b}`, 40);
+  }
+  function buildHolistic(){
+    const themeKey = document.getElementById('themeSelect').value;
+    const themeLabel = document.querySelector(`#themeSelect option[value="${themeKey}"]`)?.textContent || themeKey;
+    const title = titleInput.value || 'Untitled Story';
+    const sections = {}; HEADS.forEach(h=> sections[h.key] = document.getElementById('ta-'+h.key).value.trim());
+    const logline = buildLogline(sections.set, sections.break);
+    const task = (taskInput && taskInput.value) || 'Produce a 1–2 page outline including conflict, stakes, and visual motifs.';
+
+    return [
+`SYSTEM
+You are a concise story‑skeleton assistant. Be structured.`,
+`TASK
+${task}`,
+`META
+Title: ${title}
+Theme: ${themeLabel}
+Format: 5 beats (set, complicate, breakpoint, clean, closing)`,
+`LOGLINE
+${logline}`,
+`CONTEXT
+SET THE STAGE: ${oneLine(sections.set)}
+COMPLICATE THINGS: ${oneLine(sections.ruin)}
+BREAKPOINT: ${oneLine(sections.break)}
+CLEAN UP: ${oneLine(sections.clean)}
+CLOSING: ${oneLine(sections.wrap)}`,
+`OUTPUT
+(1) Numbered beats; (2) optional scene list; (3) 5 visual motifs.
+Length: ~300–500 words.`
+    ].join("\n\n");
+  }
+  function buildSummary(){
+    const themeKey = document.getElementById('themeSelect').value;
+    const themeLabel = document.querySelector(`#themeSelect option[value="${themeKey}"]`)?.textContent || themeKey;
+    const title = titleInput.value || 'Untitled Story';
+    const picks = HEADS.map(h=>{ const txt=document.getElementById('ta-'+h.key).value.trim(); return sentences(txt)[0] || txt; }).join(' ');
+    const body = capWords(oneLine(picks), Number(sumRange?sumRange.value:100));
+    return [
+`SYSTEM
+You quickly summarize story skeletons.`,
+`TASK
+Summarize the arc in ${sumRange?sumRange.value:100} words; keep causality; add 3 tags.`,
+`META
+Title: ${title}
+Theme: ${themeLabel}`,
+`CONTEXT
+${body}`,
+`OUTPUT
+One paragraph + "Tags: tag1, tag2, tag3".`
+    ].join("\n\n");
+  }
+  if(document.getElementById('buildCtx')){
+    document.getElementById('buildCtx').addEventListener('click', ()=>{ ctxOut.value = buildHolistic(); sumOut.value = buildSummary(); });
+    document.getElementById('copyCtx').addEventListener('click', ()=>{ ctxOut.select(); document.execCommand('copy'); });
+    document.getElementById('copySum').addEventListener('click', ()=>{ sumOut.select(); document.execCommand('copy'); });
+    document.getElementById('dlCtx').addEventListener('click', ()=>{ const title=(titleInput.value||'Untitled_Story').replace(/[^a-z0-9\-_]+/gi,'_'); const v=ctxOut.value||buildHolistic(); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([v],{type:'text/plain'})); a.download=`${title}_HOLISTIC.txt`; a.click(); URL.revokeObjectURL(a.href); });
+    document.getElementById('dlSum').addEventListener('click', ()=>{ const title=(titleInput.value||'Untitled_Story').replace(/[^a-z0-9\-_]+/gi,'_'); const v=sumOut.value||buildSummary(); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([v],{type:'text/plain'})); a.download=`${title}_SUMMARY.txt`; a.click(); URL.revokeObjectURL(a.href); });
+  }
+
+  // ----- Visual Theme Art (EN) -----
+  const LS_IMG_KEY = 'sae_theme_images_en';
+  function saveImgMap(map){
+    try{
+      localStorage.setItem(LS_IMG_KEY, JSON.stringify(map));
+      window.__sae_img_persist = 'localStorage';
+    }catch(e){
+      console.warn('Storage save failed; running volatile', e);
+      window.__sae_img_persist = 'volatile';
+    }
+  }
+  function loadImgMap(){ try { return JSON.parse(localStorage.getItem(LS_IMG_KEY) || '{}'); } catch(e) { return {}; } }
+  let IMG_MAP = loadImgMap();
+
+  function placeholderSVG(name){
+    const tr = (name||'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='360' height='200'>
+      <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+        <stop stop-color='#0b0b0b' offset='0'/><stop stop-color='#1f2937' offset='1'/>
+      </linearGradient></defs>
+      <rect width='100%' height='100%' fill='url(#g)'/>
+      <text x='50%' y='52%' fill='#9ca3af' font-family='Helvetica,Arial' font-size='18' text-anchor='middle'>${tr}</text>
+      <text x='50%' y='74%' fill='#64748b' font-family='Helvetica,Arial' font-size='12' text-anchor='middle'>Drop image or set URL</text>
+    </svg>`;
+    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  function setThemeImage(theme, data, name){ IMG_MAP[theme] = {data, name}; saveImgMap(IMG_MAP); renderArtList(); }
+  function clearThemeImage(theme){ delete IMG_MAP[theme]; saveImgMap(IMG_MAP); renderArtList(); }
+  function extractUrlFromHTML(html){ const m = String(html||'').match(/<img[^>]+src=["']([^"']+)["']/i); return m?m[1]:null; }
+  function setupDropZone(el,name){
+    let counter=0, activate=()=> el.classList.add('drop-active'), deactivate=()=> el.classList.remove('drop-active');
+    el.addEventListener('dragenter',e=>{counter++; e.preventDefault(); activate();});
+    el.addEventListener('dragover',e=>{e.preventDefault();});
+    el.addEventListener('dragleave',()=>{counter=Math.max(0,counter-1); if(counter===0) deactivate();});
+    el.addEventListener('drop',e=>{
+      e.preventDefault(); counter=0; deactivate();
+      if(e.dataTransfer?.files?.length){
+        const f=e.dataTransfer.files[0];
+        if(window.__fileToOptimizedDataURL){
+          __fileToOptimizedDataURL(f, 1280, 0.85).then(d=> setThemeImage(name,d,f.name))
+            .catch(()=>{ const r=new FileReader(); r.onload=()=> setThemeImage(name,r.result,f.name); r.readAsDataURL(f); });
+        } else {
+          const r=new FileReader(); r.onload=()=> setThemeImage(name,r.result,f.name); r.readAsDataURL(f);
+        }
+        return;
+      }
+      let url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
+      if(!url){ const html = e.dataTransfer.getData('text/html'); url = extractUrlFromHTML(html); }
+      if(url){ setThemeImage(name,url,(url.split('/').pop()||'url')); }
+    });
+  }
+  window.addEventListener('dragover', e=> e.preventDefault());
+  window.addEventListener('drop', e=>{ if(e.target===document || e.target===document.body){ e.preventDefault(); }});
+
+  function renderArtList(){
+    const wrap = document.getElementById('artList'); if(!wrap) return; wrap.innerHTML='';
+    Object.keys(TEMPLATES).forEach(function(name){
+      const rec = IMG_MAP[name] || null;
+      const label = document.querySelector(`#themeSelect option[value="${name}"]`)?.textContent || name;
+      const el = document.createElement('div'); el.className='card-tpl';
+      el.innerHTML = '<h5>'+label+'</h5>'
+        + '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">'
+        + '<div class="pv" style="width:180px; height:100px; border-radius:8px; border:1px solid #263244; background:'
+        + (rec ? 'url(' + (rec.data||'') + ') center/cover no-repeat' : "url('" + placeholderSVG(label) + "') center/cover no-repeat") + '"></div>'
+        + '<div class="row">'
+        +   '<label style="display:inline-block"><input type="file" accept="image/*" style="display:none"><button>Choose Image</button></label>'
+        +   '<button data-url>Set URL</button>'
+        +   '<button data-clear>Clear</button>'
+        +   '<button data-use>Use as Banner</button>'
+        +   (rec ? '<span class="hint">Saved: ' + (rec.name || 'image') + '</span>' : '')
+        +   (window.__sae_img_persist==='volatile' ? ' <span class="hint" style="color:#b45309">(volatile)</span>' : '')
+        + '</div></div>';
+      const input = el.querySelector('input[type=file]');
+      input.addEventListener('change', (e)=>{
+        const f = e.target.files && e.target.files[0]; if(!f) return;
+        if(window.__fileToOptimizedDataURL){
+          __fileToOptimizedDataURL(f, 1280, 0.85).then(d=> setThemeImage(name,d,f.name))
+            .catch(()=>{ const r=new FileReader(); r.onload=()=> setThemeImage(name,r.result,f.name); r.readAsDataURL(f); });
+        } else {
+          const r=new FileReader(); r.onload=()=> setThemeImage(name,r.result,f.name); r.readAsDataURL(f);
+        }
+      });
+      el.querySelector('[data-url]').addEventListener('click', ()=>{
+        let u = prompt('Image URL (https://...)'); if(!u) return;
+        try{ u = u.trim(); if(!/^https?:/i.test(u)) u = 'https://' + u; u = encodeURI(u); }catch(_){}
+        const test = new Image(); test.crossOrigin = 'anonymous';
+        test.onload = ()=> setThemeImage(name, u, (u.split('/').pop()||'url'));
+        test.onerror = ()=> alert('Remote server blocks this image or the URL is invalid. Try downloading and uploading the file.');
+        test.src = u;
+      });
+      el.querySelector('[data-clear]').addEventListener('click', ()=> clearThemeImage(name));
+      el.querySelector('[data-use]').addEventListener('click', ()=>{
+        document.getElementById('themeSelect').value = name;
+        if(window.__setBannerSrc && IMG_MAP[name] && IMG_MAP[name].data){ window.__setBannerSrc(IMG_MAP[name].data); }
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+      const pv = el.querySelector('.pv');
+      setupDropZone(pv,name);
+      pv.addEventListener('click', ()=> input.click());
+      wrap.appendChild(el);
+    });
+  }
+
+  const tplList = document.getElementById('tplList');
+  function renderTemplates(){
+    tplList.innerHTML='';
+    Object.entries(TEMPLATES).forEach(([name, arr])=>{
+      const label = document.querySelector(`#themeSelect option[value="${name}"]`)?.textContent || name;
+      const el = document.createElement('div');
+      el.className='card-tpl';
+      el.innerHTML = `
+        <h5>${label}</h5>
+        <p>${(arr[0]||'').slice(0,120)}…</p>
+        <div class="row">
+          <button data-load="${name}">Load</button>
+          <button data-txt="${name}">Download .txt</button>
+        </div>`;
+      el.querySelector('[data-load]')?.addEventListener('click', ()=> loadTemplate(name));
+      el.querySelector('[data-txt]')?.addEventListener('click', ()=>{
+        const lines = ['# '+label,'']; HEADS.forEach((h,i)=>{ lines.push('## '+h.label); lines.push(arr[i]||''); lines.push(''); });
+        const safe = label.replace(/[^a-z0-9\-_]+/gi,'_'); const a=document.createElement('a');
+        a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/plain'})); a.download=`${safe}.txt`; a.click(); URL.revokeObjectURL(a.href);
+      });
+      tplList.appendChild(el);
+    });
+  }
+
+  (function init(){ initGrid(); renderTemplates(); renderArtList(); })();
+</script>
+</body>
+</html>
